@@ -4,6 +4,20 @@ A Flask application for creating and managing digital tipping jars with SQLite d
 
 ## Setup
 
+### Option 1: Docker (Recommended)
+
+1. Install Docker and Docker Compose
+2. Build and run the application:
+   ```bash
+   # Production mode
+   docker-compose up --build
+   
+   # Development mode with hot reload
+   docker-compose --profile dev up --build bitcoin-tipping-dev
+   ```
+
+### Option 2: Local Python Setup
+
 1. Install Python 3.7 or higher
 2. Install the required dependencies:
    ```bash
@@ -12,13 +26,31 @@ A Flask application for creating and managing digital tipping jars with SQLite d
 
 ## Running the Application
 
-### Option 1: Direct Execution (Development)
+### Docker Commands
+
+```bash
+# Build the Docker image
+docker build -t bitcoin-tipping .
+
+# Run in production mode
+docker run -p 5000:5000 -v $(pwd)/data:/app/data bitcoin-tipping
+
+# Run in development mode
+docker run -p 5000:5000 -v $(pwd):/app -v $(pwd)/data:/app/data bitcoin-tipping python app.py
+
+# Using docker-compose (recommended)
+docker-compose up --build
+```
+
+### Local Python Execution
+
+#### Option 1: Direct Execution (Development)
 1. Run the Flask application directly:
    ```bash
    python app.py
    ```
 
-### Option 2: Using Gunicorn (Production)
+#### Option 2: Using Gunicorn (Production)
 1. Run with Gunicorn:
    ```bash
    gunicorn -w 4 -b 0.0.0.0:5000 app:app
@@ -30,7 +62,7 @@ A Flask application for creating and managing digital tipping jars with SQLite d
    ```
 
 ### Database Initialization
-Before using the database features, initialize the database:
+The database is automatically initialized when using Docker. For local development, initialize the database:
 ```bash
 curl http://localhost:5000/init-db
 ```
@@ -44,6 +76,9 @@ curl http://localhost:5000/migrate-db
 ```
 
 **Warning:** This will reset all existing data and recreate the database with the latest schema.
+
+### Docker Data Persistence
+When using Docker, the database is stored in the `./data` directory on your host machine. This ensures your data persists between container restarts.
 
 ### Accessing the Application
 Open your web browser and navigate to:

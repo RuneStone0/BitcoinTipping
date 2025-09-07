@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  bitcoin-tipping:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      # Mount database file to persist data
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=production
+      - SQLALCHEMY_DATABASE_URI=sqlite:////app/data/app.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Development service with hot reload
+  bitcoin-tipping-dev:
+    build: .
+    ports:
+      - "5001:5000"
+    volumes:
+      - .:/app
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - SQLALCHEMY_DATABASE_URI=sqlite:////app/data/app.db
+    command: ["python", "app.py"]
+    profiles:
+      - dev
