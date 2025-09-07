@@ -10,86 +10,140 @@
         /* Hero Section */
         .hero-section {
             text-align: center;
-            padding: 50px 0;
-            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
-            color: white;
-            border-radius: 20px;
-            margin-bottom: 60px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
-        }
-        
-        .hero-content {
-            position: relative;
-            z-index: 1;
+            padding: 60px 0;
+            margin-bottom: 40px;
         }
         
         .hero-title {
-            font-size: 3.5rem;
+            font-size: 3rem;
             font-weight: 700;
             margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: var(--text-primary);
+            line-height: 1.2;
         }
         
         .hero-subtitle {
-            font-size: 1.4rem;
-            margin-bottom: 40px;
-            opacity: 0.9;
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            line-height: 1.6;
-            font-weight: 500;
+            line-height: 1.5;
         }
         
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
+        /* Motivation Section */
+        .motivation-section {
+            background: var(--bg-tertiary);
+            padding: 60px 40px;
+            border-radius: 20px;
+            margin: 60px 0;
+            text-align: center;
         }
         
-        .hero-btn {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
+        .motivation-title {
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 30px;
+            color: var(--text-primary);
+        }
+        
+        .motivation-content {
+            max-width: 800px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        .motivation-highlight {
+            color: var(--bitcoin-orange);
             font-weight: 600;
         }
         
-        .hero-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-color: rgba(255, 255, 255, 0.5);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        /* Use Cases Section */
+        .use-cases-section {
+            margin: 80px 0;
         }
         
-        .hero-btn.primary {
-            background: rgba(255, 255, 255, 0.9);
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .use-case {
+            background: var(--bg-secondary);
+            padding: 30px 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px var(--shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .use-case:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px var(--shadow);
+        }
+        
+        .use-case-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .use-case-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+        
+        .use-case-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        /* Benefits Section */
+        .benefits-section {
+            background: var(--bg-secondary);
+            padding: 50px 40px;
+            border-radius: 20px;
+            margin: 60px 0;
+            border-left: 4px solid var(--bitcoin-orange);
+        }
+        
+        .benefits-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .benefits-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        .benefits-list {
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .benefits-list li {
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+        
+        .benefits-highlight {
             color: var(--bitcoin-orange);
-            border-color: white;
-        }
-        
-        .hero-btn.primary:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            font-weight: 600;
         }
         
         /* How It Works Section */
@@ -253,21 +307,36 @@
         /* Responsive Design */
         @media (max-width: 768px) {
             .hero-title {
-                font-size: 2.5rem;
+                font-size: 2.2rem;
             }
             
             .hero-subtitle {
                 font-size: 1.1rem;
             }
             
-            .hero-buttons {
-                flex-direction: column;
-                align-items: center;
+            .motivation-section {
+                padding: 40px 20px;
             }
             
-            .hero-btn {
-                width: 100%;
-                max-width: 300px;
+            .motivation-title {
+                font-size: 1.8rem;
+            }
+            
+            .motivation-content {
+                font-size: 1rem;
+            }
+            
+            .use-cases-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .benefits-section {
+                padding: 30px 20px;
+            }
+            
+            .benefits-title {
+                font-size: 1.3rem;
             }
             
             .steps-container {
@@ -508,15 +577,85 @@
 {% block content %}
         <!-- Hero Section -->
         <div class="hero-section">
-            <div class="hero-content">
-                <p class="hero-subtitle">
-                    Create beautiful Bitcoin tipping jars and share them with QR codes. 
-                    Accept tips in Bitcoin and Lightning Network payments instantly.
+            <h1 class="hero-title">🍯 Bitcoin Tipping Jars</h1>
+            <p class="hero-subtitle">
+                Create beautiful, shareable Bitcoin tipping jars that make it easy for anyone to send you Bitcoin or Lightning payments with just a quick scan.
+            </p>
+        </div>
+
+        <!-- Motivation Section -->
+        <div class="motivation-section">
+            <h2 class="motivation-title">Why I Built This</h2>
+            <div class="motivation-content">
+                <p>
+                    I created this site because I wanted to <span class="motivation-highlight">share my Bitcoin books for free</span> with others while giving readers a simple way to tip me. 
+                    There are two reasons this matters to me: <span class="motivation-highlight">it's fun to get a small payment when you see others have read your book</span>, 
+                    and <span class="motivation-highlight">making your first Bitcoin payment is a great first step in any Bitcoin journey</span>.
                 </p>
-                <div class="hero-buttons">
-                    <button onclick="openCreateJarModal()" class="hero-btn primary">Create New Jar</button>
-                    <a href="/login" class="hero-btn">Edit Existing Jar</a>
+                <p>
+                    But I realized this concept could work for so much more than just books! That's why I kept the Bitcoin tipping jar generic - 
+                    it can be used for <span class="motivation-highlight">any content, service, or interaction</span> where you want to give people an easy way to show appreciation with Bitcoin.
+                </p>
+            </div>
+        </div>
+
+        <!-- Use Cases Section -->
+        <div class="use-cases-section">
+            <h2 class="section-title">Perfect For</h2>
+            <div class="use-cases-grid">
+                <div class="use-case">
+                    <div class="use-case-icon">📚</div>
+                    <h3 class="use-case-title">Free Content</h3>
+                    <p class="use-case-description">Books, articles, videos, podcasts, or any content you share freely</p>
                 </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🎨</div>
+                    <h3 class="use-case-title">Creative Work</h3>
+                    <p class="use-case-description">Art, music, writing, photography, or any creative expression</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">💡</div>
+                    <h3 class="use-case-title">Help & Advice</h3>
+                    <p class="use-case-description">Consulting, mentoring, tutorials, or sharing your expertise</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🌱</div>
+                    <h3 class="use-case-title">Community Building</h3>
+                    <p class="use-case-description">Events, meetups, online communities, or social initiatives</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🛠️</div>
+                    <h3 class="use-case-title">Open Source</h3>
+                    <p class="use-case-description">Software projects, tools, libraries, or technical contributions</p>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-icon">🎯</div>
+                    <h3 class="use-case-title">Any Appreciation</h3>
+                    <p class="use-case-description">When you want to give people an easy way to show they value what you do</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div class="benefits-section">
+            <h3 class="benefits-title">
+                💡 Why QR Codes Link to This Website
+            </h3>
+            <div class="benefits-content">
+                <p>
+                    You might wonder: <span class="benefits-highlight">why not just create direct payment QR codes?</span> 
+                    Great question! Here's why our approach is better:
+                </p>
+                <ul class="benefits-list">
+                    <li><span class="benefits-highlight">Flexibility:</span> Change your payment addresses anytime without reprinting QR codes</li>
+                    <li><span class="benefits-highlight">Referral codes:</span> Help new users get started with Bitcoin by including exchange referral codes</li>
+                    <li><span class="benefits-highlight">Personal touch:</span> Users can leave thank you messages instead of just sending anonymous payments</li>
+                    <li><span class="benefits-highlight">Future-proof:</span> Add new payment methods or features without updating your QR codes</li>
+                </ul>
+                <p>
+                    This makes the tipping experience more <span class="benefits-highlight">personal, flexible, and educational</span> 
+                    for everyone involved!
+                </p>
             </div>
         </div>
 
@@ -527,28 +666,28 @@
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-icon">🏺</div>
-                    <h3 class="step-title">Create a Tipping Jar</h3>
+                    <h3 class="step-title">Create Your Tipping Jar</h3>
                     <p class="step-description">
                         Set up your personalized tipping jar with your email address. 
-                        Configure Bitcoin and Lightning Network payment options to start accepting tips.
+                        Configure Bitcoin and Lightning Network payment options to start accepting tips from anyone, anywhere.
                     </p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-icon">📱</div>
-                    <h3 class="step-title">Distribute QR Codes</h3>
+                    <h3 class="step-title">Share Your QR Codes</h3>
                     <p class="step-description">
-                        Generate beautiful QR codes for each payment method. Print them as stickers, 
-                        share them digitally, or display them anywhere you want to receive tips.
+                        Generate beautiful QR codes for each payment method. Share them in your content, 
+                        on your website, social media, or anywhere you want to receive appreciation.
                     </p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-icon">💰</div>
-                    <h3 class="step-title">Wait for Tips</h3>
+                    <h3 class="step-title">Receive Tips</h3>
                     <p class="step-description">
-                        Sit back and watch the tips roll in! Your QR codes make it easy for anyone 
-                        to send you Bitcoin or Lightning payments with just a quick scan.
+                        Watch the appreciation flow in! Your QR codes make it incredibly easy for anyone 
+                        to send you Bitcoin or Lightning payments with just a quick scan from their phone.
                     </p>
                 </div>
             </div>
@@ -556,11 +695,11 @@
 
         <!-- Action Section -->
         <div class="action-section">
-            <h2 class="action-title">Ready to Get Started?</h2>
-            <p class="action-subtitle">Create your first tipping jar or manage your existing ones</p>
+            <h2 class="action-title">Ready to Start Receiving Bitcoin Tips?</h2>
+            <p class="action-subtitle">Create your first tipping jar in seconds and start sharing it with your audience</p>
             <div class="action-buttons">
-                <button onclick="openCreateJarModal()" class="action-btn create">Create New Jar</button>
-                <a href="/login" class="action-btn edit">Edit Existing Jar</a>
+                <button onclick="openCreateJarModal()" class="action-btn create">Create Your Tipping Jar</button>
+                <a href="/login" class="action-btn edit">Manage Existing Jar</a>
             </div>
         </div>
 

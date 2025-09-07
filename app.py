@@ -7,6 +7,9 @@ import qrcode
 import io
 import hashlib
 from PIL import Image, ImageDraw
+import bech32
+import requests
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -151,13 +154,32 @@ def update_referral_codes(email_hash):
     
     return jsonify(jar.to_dict())
 
-@app.route('/preview/<email_hash>', methods=['GET'])
-def preview_jar(email_hash):
+
+@app.route('/api/lnurl-pay/<email_hash>', methods=['GET'])
+def get_lnurl_pay_string(email_hash):
+    """Get Bech32-encoded LNURL-pay string for a jar's lightning address"""
     jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    # Ensure payment_options and referral_codes are parsed for the template
-    jar.payment_options = jar.get_payment_options()
-    jar.referral_codes = jar.get_referral_codes()
-    return render_template('preview.html', jar=jar)
+    payment_options = jar.get_payment_options()
+    
+    lightning_address = payment_options.get('lightning')
+    if not lightning_address:
+        return jsonify({'error': 'Lightning address not configured'}), 404
+    
+    lnurl_pay_string = lightning_address_to_lnurl_pay(lightning_address)
+    return jsonify({'lnurl_pay': lnurl_pay_string})
+
+@app.route('/api/bitcoin-price', methods=['GET'])
+def get_bitcoin_price_api():
+    """Get current Bitcoin price and conversion rates"""
+    try:
+        btc_price = get_bitcoin_price()
+        return jsonify({
+            'btc_price_usd': btc_price,
+            'sats_per_usd': usd_to_sats(1),
+            'usd_per_sat': round(1 / usd_to_sats(1), 8)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/qr/<email_hash>/<payment_method>', methods=['GET'])
 def generate_qr_code(email_hash, payment_method):
@@ -165,11 +187,36 @@ def generate_qr_code(email_hash, payment_method):
     jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
     payment_options = jar.get_payment_options()
     
-    if payment_method not in payment_options or not payment_options[payment_method]:
-        return jsonify({'error': 'Payment method not found or not configured'}), 404
+    # Get amount parameter (default to 1 USD)
+    amount_usd = request.args.get('amount', '1')
+    try:
+        amount_usd = float(amount_usd)
+    except (ValueError, TypeError):
+        amount_usd = 1.0
     
-    # Prepare the data for QR code
-    qr_data = payment_options[payment_method]
+    # Handle special case for Bitcoin Core & Lightning
+    if payment_method == 'bitcoin_core_lightning':
+        bitcoin_address = payment_options.get('bitcoin')
+        lightning_address = payment_options.get('lightning')
+        
+        if not bitcoin_address or not lightning_address:
+            return jsonify({'error': 'Both Bitcoin and Lightning addresses are required for Bitcoin Core & Lightning'}), 404
+        
+        # Convert Lightning Address to Bech32-encoded LNURL-pay string
+        lnurl_pay_string = lightning_address_to_lnurl_pay(lightning_address)
+        
+        # Convert USD to BTC using current Bitcoin price
+        btc_price = get_bitcoin_price()
+        btc_amount = amount_usd / btc_price
+        
+        # Create the combined bitcoin URI
+        qr_data = f"bitcoin:{bitcoin_address}?amount={btc_amount:.8f}&lightning={lnurl_pay_string}"
+    elif payment_method not in payment_options or not payment_options[payment_method]:
+        return jsonify({'error': 'Payment method not found or not configured'}), 404
+    else:
+        # For individual payment methods, we don't modify the address
+        # The amount is handled by the wallet when scanning the QR code
+        qr_data = payment_options[payment_method]
     
     # Generate QR code with higher error correction to accommodate logo
     qr = qrcode.QRCode(
@@ -199,6 +246,8 @@ def generate_qr_code(email_hash, payment_method):
         logo_path = "static/images/bitcoin.svg.png"
     elif payment_method == 'lightning':
         logo_path = "static/images/bitcoin-lightning.png"
+    elif payment_method == 'bitcoin_core_lightning':
+        logo_path = "static/images/bitcoin-lightning.png"  # Use lightning logo for combined method
     else:
         logo_path = None
     
@@ -263,7 +312,7 @@ def public_jar(email_hash):
     # Ensure payment_options and referral_codes are parsed for the template
     jar.payment_options = jar.get_payment_options()
     jar.referral_codes = jar.get_referral_codes()
-    return render_template('preview.html', jar=jar)
+    return render_template('public_jar.html', jar=jar)
 
 @app.route('/init-db')
 def init_db():
@@ -371,6 +420,77 @@ def migrate_db():
 def generate_email_hash(email):
     """Generate SHA-256 hash of email address"""
     return hashlib.sha256(email.lower().encode('utf-8')).hexdigest()
+
+def lightning_address_to_lnurl_pay(lightning_address):
+    """Convert Lightning Address to Bech32-encoded LNURL-pay string"""
+    if '@' not in lightning_address:
+        # Assume it's already an LNURL or other format
+        return lightning_address
+    
+    # Convert Lightning Address to LNURL endpoint
+    username, domain = lightning_address.split('@', 1)
+    lnurl_endpoint = f"https://{domain}/.well-known/lnurlp/{username}"
+    
+    # Convert to bytes and encode as Bech32
+    lnurl_bytes = lnurl_endpoint.encode('utf-8')
+    lnurl_pay_string = bech32.bech32_encode('lnurl', bech32.convertbits(lnurl_bytes, 8, 5))
+    
+    return lnurl_pay_string
+
+def get_bitcoin_price():
+    """Get current Bitcoin price in USD with 24-hour caching"""
+    cache_file = os.path.join(basedir, 'bitcoin_price_cache.json')
+    
+    # Check if cache exists and is less than 24 hours old
+    if os.path.exists(cache_file):
+        try:
+            with open(cache_file, 'r') as f:
+                cache_data = json.load(f)
+            
+            cache_time = datetime.fromisoformat(cache_data['timestamp'])
+            if datetime.now() - cache_time < timedelta(hours=24):
+                return cache_data['price']
+        except (json.JSONDecodeError, KeyError, ValueError):
+            # Cache file is corrupted, continue to fetch new price
+            pass
+    
+    # Fetch new price from CoinGecko API
+    try:
+        response = requests.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd', timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        price = data['bitcoin']['usd']
+        
+        # Cache the price
+        cache_data = {
+            'price': price,
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        with open(cache_file, 'w') as f:
+            json.dump(cache_data, f)
+        
+        return price
+        
+    except (requests.RequestException, KeyError, ValueError) as e:
+        print(f"Error fetching Bitcoin price: {e}")
+        # Return fallback price if API fails
+        return 40000.0  # Conservative fallback
+
+def usd_to_sats(usd_amount):
+    """Convert USD amount to satoshis using current Bitcoin price"""
+    btc_price = get_bitcoin_price()
+    # 1 BTC = 100,000,000 sats
+    sats = (usd_amount / btc_price) * 100_000_000
+    return int(round(sats))
+
+def sats_to_usd(sats_amount):
+    """Convert satoshis to USD using current Bitcoin price"""
+    btc_price = get_bitcoin_price()
+    # 1 BTC = 100,000,000 sats
+    usd = (sats_amount / 100_000_000) * btc_price
+    return round(usd, 2)
 
 # For Gunicorn deployment
 def create_app():

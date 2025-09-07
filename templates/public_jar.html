@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block title %}Bitcoin Tipping Jar - {{ jar.email_hash }}{% endblock %}
+
+{% block page_title %}🍯 Tipping Jar{% endblock %}
+
+{% block header_left %}
+<button onclick="goToEdit()" class="home-btn">← Back</button>
+{% endblock %}
+
+{% block extra_css %}
+        .jar-uuid {
+            font-family: monospace;
+            background: var(--bg-tertiary);
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .referral-button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a1a !important;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.25);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .referral-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            text-decoration: none;
+            color: #1a1a1a !important;
+            background: linear-gradient(135deg, #FFE135 0%, #FFB347 100%);
+        }
+        .referral-button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Dark mode improvements for referral button */
+        @media (prefers-color-scheme: dark) {
+            .referral-button {
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                color: #1a1a1a !important;
+                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+            }
+            .referral-button:hover {
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+                color: #1a1a1a !important;
+            }
+        }
+        
+        [data-theme="dark"] .referral-button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a1a !important;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        [data-theme="dark"] .referral-button:hover {
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+            color: #1a1a1a !important;
+        }
+        .payment-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .referral-section {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+        .referral-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+        .referral-section p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .payment-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+        .payment-method-selector {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-sizing: border-box;
+        }
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .payment-info {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .qr-code {
+            max-width: 300px;
+            margin: 0 auto 15px auto;
+            display: block;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+        .payment-address {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            word-break: break-all;
+            line-height: 1.4;
+            max-width: 400px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+            position: relative;
+        }
+        .payment-address::after {
+            content: '📋';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 10px;
+        }
+        .payment-address:hover {
+            opacity: 1;
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+        .payment-address:hover::after {
+            opacity: 1;
+        }
+        .payment-address:active {
+            transform: scale(0.98);
+        }
+        .no-payment-methods {
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 20px;
+            transition: color 0.3s ease;
+        }
+        .amount-selector {
+            margin-bottom: 25px;
+        }
+        .amount-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .amount-btn {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+        .amount-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .amount-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .amount-btn.custom:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            transform: translateY(-2px);
+        }
+        .amount-btn.custom.active {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.4);
+        }
+        .amount-display {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .amount-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .amount-row:last-child {
+            margin-bottom: 0;
+        }
+        .amount-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 50px;
+            margin-right: 10px;
+        }
+        .amount-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-sizing: border-box;
+        }
+        .amount-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .usd-input {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        .satoshi-input {
+            font-family: 'Courier New', monospace;
+            font-weight: 700;
+            color: #f7931a;
+        }
+{% endblock %}
+
+{% block content %}
+        <div class="payment-section">
+            {% if jar.payment_options %}
+                {% if jar.payment_options.bitcoin and jar.payment_options.lightning %}
+                    <h4>Bitcoin Core & Lightning</h4>
+                {% else %}
+                    {% for method, address in jar.payment_options.items() %}
+                        {% if address %}
+                            <h4>{{ method|title }}</h4>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                
+                <!-- Amount Selector -->
+                <div class="amount-selector">
+                    <div class="amount-options">
+                        <button class="amount-btn" data-amount="1" onclick="selectAmount(1)">$1 (Tip for fun)</button>
+                        <button class="amount-btn" data-amount="10" onclick="selectAmount(10)">$10 (Tip a coffee)</button>
+                        <button class="amount-btn custom" data-amount="custom" onclick="selectAmount('custom')">Custom</button>
+                    </div>
+                </div>
+                
+                <div id="paymentInfo" class="payment-info">
+                    <div class="qr-container">
+                        <img id="qrCode" class="qr-code" style="display: none;" alt="QR Code">
+                        <div class="payment-address" id="paymentAddress" title="Click to copy address"></div>
+                        <div class="amount-display" id="amountDisplay" style="display: none;">
+                            <div class="amount-row">
+                                <label class="amount-label">USD:</label>
+                                <input type="number" id="usdAmount" class="amount-input usd-input" value="10" min="0.01" step="0.01" onchange="updateFromUSD()">
+                            </div>
+                            <div class="amount-row">
+                                <label class="amount-label">Sats:</label>
+                                <input type="number" id="satoshiAmount" class="amount-input satoshi-input" value="8990" min="1" step="1" onchange="updateFromSats()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-payment-methods">
+                    No payment methods configured for this jar.
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if jar.referral_codes and jar.referral_codes.strike %}
+        <div class="payment-section referral-section">
+            <h4>Don't have Bitcoin yet?</h4>
+            <p>
+                Buy it here with my referral code for extra perks:
+            </p>
+            <div class="payment-info">
+                <div class="payment-method-name">⚡ Strike.me</div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="https://invite.strike.me/{{ jar.referral_codes.strike }}" 
+                       target="_blank" 
+                       class="referral-button">
+                        Get Bitcoin with Strike
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+        const jarUuid = '{{ jar.email_hash }}';
+        const paymentOptions = {{ jar.payment_options|tojson }};
+        let currentAmount = 10; // Default amount in USD
+        let currentMethod = null;
+        let isInitializing = true; // Flag to prevent button selection during initialization
+        let conversionRates = {
+            satsPerUsd: 2500, // Fallback rate
+            usdPerSat: 0.0004 // Fallback rate
+        };
+        
+        const methodNames = {
+            'bitcoin': 'Bitcoin',
+            'lightning': 'Bitcoin Lightning',
+            'bitcoin_core_lightning': 'Bitcoin Core & Lightning'
+        };
+
+        function setupCopyFunctionality() {
+            const paymentAddress = document.getElementById('paymentAddress');
+            const copyAddress = paymentAddress.textContent;
+            
+            paymentAddress.onclick = function() {
+                navigator.clipboard.writeText(copyAddress).then(() => {
+                    // Show temporary feedback
+                    const originalText = paymentAddress.textContent;
+                    paymentAddress.textContent = 'Copied!';
+                    paymentAddress.style.color = 'var(--success-text)';
+                    setTimeout(() => {
+                        paymentAddress.textContent = originalText;
+                        paymentAddress.style.color = '';
+                    }, 1000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = copyAddress;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    // Show feedback
+                    const originalText = paymentAddress.textContent;
+                    paymentAddress.textContent = 'Copied!';
+                    paymentAddress.style.color = 'var(--success-text)';
+                    setTimeout(() => {
+                        paymentAddress.textContent = originalText;
+                        paymentAddress.style.color = '';
+                    }, 1000);
+                });
+            };
+        }
+
+        function selectAmount(amount) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to selected button
+            event.target.classList.add('active');
+            
+            if (amount !== 'custom') {
+                currentAmount = amount;
+                updateAmountInputs();
+                updatePaymentInfo();
+            }
+        }
+        
+        function selectCustomButton() {
+            // Remove active class from all buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to custom button
+            document.querySelector('[data-amount="custom"]').classList.add('active');
+        }
+        
+        function updateFromUSD() {
+            const usdValue = parseFloat(document.getElementById('usdAmount').value);
+            if (usdValue && usdValue > 0) {
+                currentAmount = usdValue;
+                // Only update button selection if not initializing
+                if (!isInitializing) {
+                    // Select appropriate button based on value
+                    if (usdValue === 1) {
+                        document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+                        document.querySelector('[data-amount="1"]').classList.add('active');
+                    } else if (usdValue === 10) {
+                        document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+                        document.querySelector('[data-amount="10"]').classList.add('active');
+                    } else {
+                        selectCustomButton();
+                    }
+                }
+                updateAmountInputs();
+                updatePaymentInfo();
+            }
+        }
+        
+        function updateFromSats() {
+            const satsValue = parseInt(document.getElementById('satoshiAmount').value);
+            if (satsValue && satsValue > 0) {
+                // Convert sats to USD using current conversion rate
+                currentAmount = satsValue * conversionRates.usdPerSat;
+                // Only update button selection if not initializing
+                if (!isInitializing) {
+                    // Select appropriate button based on USD value
+                    if (currentAmount === 1) {
+                        document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+                        document.querySelector('[data-amount="1"]').classList.add('active');
+                    } else if (currentAmount === 10) {
+                        document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+                        document.querySelector('[data-amount="10"]').classList.add('active');
+                    } else {
+                        selectCustomButton();
+                    }
+                }
+                updateAmountInputs();
+                updatePaymentInfo();
+            }
+        }
+        
+        function updateAmountInputs() {
+            // Update USD input
+            document.getElementById('usdAmount').value = currentAmount.toFixed(2);
+            
+            // Update sats input using current conversion rate
+            const satoshis = Math.round(currentAmount * conversionRates.satsPerUsd);
+            document.getElementById('satoshiAmount').value = satoshis;
+        }
+        
+        function fetchConversionRates() {
+            fetch('/api/bitcoin-price')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sats_per_usd && data.usd_per_sat) {
+                        conversionRates.satsPerUsd = data.sats_per_usd;
+                        conversionRates.usdPerSat = data.usd_per_sat;
+                        // Update the amount inputs with new rates (but don't trigger button selection)
+                        updateAmountInputs();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching conversion rates:', error);
+                    // Keep using fallback rates
+                });
+        }
+        
+        function updatePaymentInfo() {
+            const paymentInfo = document.getElementById('paymentInfo');
+            const paymentAddress = document.getElementById('paymentAddress');
+            const qrCode = document.getElementById('qrCode');
+            const amountDisplay = document.getElementById('amountDisplay');
+            
+            // Show amount display
+            amountDisplay.style.display = 'block';
+            
+            // Check if both bitcoin and lightning are available
+            if (paymentOptions['bitcoin'] && paymentOptions['lightning']) {
+                currentMethod = 'bitcoin_core_lightning';
+                // Show Bitcoin Core & Lightning
+                const bitcoinAddress = paymentOptions['bitcoin'];
+                const lightningAddress = paymentOptions['lightning'];
+                
+                // Show loading state while fetching Bech32-encoded LNURL-pay string
+                paymentAddress.textContent = 'Loading LNURL-pay string...';
+                paymentInfo.style.display = 'block';
+                
+                // Fetch Bech32-encoded LNURL-pay string from backend
+                fetch(`/api/lnurl-pay/${jarUuid}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.lnurl_pay) {
+                            // Convert USD to BTC (rough approximation: 1 USD ≈ 0.000025 BTC)
+                            const btcAmount = (currentAmount * 0.000025).toFixed(8);
+                            // Create the combined bitcoin URI with Bech32-encoded LNURL-pay
+                            const displayAddress = `bitcoin:${bitcoinAddress}?amount=${btcAmount}&lightning=${data.lnurl_pay}`;
+                            paymentAddress.textContent = displayAddress;
+                            setupCopyFunctionality();
+                            
+                            // Generate and show QR code
+                            qrCode.src = `/qr/${jarUuid}/bitcoin_core_lightning?amount=${currentAmount}`;
+                            qrCode.style.display = 'block';
+                        } else {
+                            paymentAddress.textContent = 'Error loading LNURL-pay string';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching LNURL-pay string:', error);
+                        paymentAddress.textContent = 'Error loading LNURL-pay string';
+                    });
+            } else {
+                // Show individual payment method
+                const method = Object.keys(paymentOptions).find(key => paymentOptions[key]);
+                if (method && paymentOptions[method]) {
+                    currentMethod = method;
+                    const displayAddress = paymentOptions[method];
+                    paymentAddress.textContent = displayAddress;
+                    setupCopyFunctionality();
+                    
+                    // Generate and show QR code
+                    qrCode.src = `/qr/${jarUuid}/${method}?amount=${currentAmount}`;
+                    qrCode.style.display = 'block';
+                }
+            }
+        }
+        
+        function displayPaymentInfo() {
+            // Set default amount selection to $10
+            document.querySelector('[data-amount="10"]').classList.add('active');
+            currentAmount = 10;
+            
+            // Fetch current conversion rates
+            fetchConversionRates();
+            
+            // Initialize with fallback rates
+            updateAmountInputs();
+            updatePaymentInfo();
+            
+            // Mark initialization as complete
+            isInitializing = false;
+        }
+
+        function goToEdit() {
+            // Try to go back in history first, fallback to jar dashboard
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = `/manage/${jarUuid}`;
+            }
+        }
+
+        // Auto-display payment information on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            displayPaymentInfo();
+        });
+{% endblock %}

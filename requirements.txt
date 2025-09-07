@@ -3,3 +3,4 @@ Flask-SQLAlchemy==3.0.5
 gunicorn==21.2.0
 qrcode[pil]==7.4.2
 requests==2.31.0
+bech32==1.2.0
