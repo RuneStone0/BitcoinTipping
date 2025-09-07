@@ -1,33 +1,291 @@
 {% extends "base.html" %}
 
-{% block title %}BitTip - Tipping Jars{% endblock %}
+{% block title %}Bitcoin Tipping - Tipping Jars{% endblock %}
 
-{% block page_title %}🍯 BitTip{% endblock %}
+{% block page_title %}🍯 Bitcoin Tipping{% endblock %}
 
 {% block header_left %}{% endblock %}
 
 {% block extra_css %}
-        .subtitle {
-            color: var(--text-secondary);
-            margin-bottom: 40px;
-            font-size: 18px;
-            transition: color 0.3s ease;
-        }
-        .create-jar-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 50px 0;
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
             color: white;
-            border: none;
+            border-radius: 20px;
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .hero-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             padding: 15px 30px;
             font-size: 18px;
-            border-radius: 25px;
+            border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
         }
-        .create-jar-btn:hover {
+        
+        .hero-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
+        
+        .hero-btn.primary {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--bitcoin-orange);
+            border-color: white;
+        }
+        
+        .hero-btn.primary:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        /* How It Works Section */
+        .how-it-works {
+            margin: 80px 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 60px;
+            color: var(--text-primary);
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
+            border-radius: 2px;
+        }
+        
+        .steps-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .step {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
+        }
+        
+        .step:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+        
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+            box-shadow: 0 4px 15px rgba(247, 147, 26, 0.3);
+        }
+        
+        .step-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .step-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+        
+        .step-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+        
+        /* Action Section */
+        .action-section {
+            background: var(--bg-tertiary);
+            padding: 60px 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 80px 0;
+        }
+        
+        .action-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        .action-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            min-width: 200px;
+        }
+        
+        .action-btn.create {
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
+            color: white;
+            border: none;
+        }
+        
+        .action-btn.create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(247, 147, 26, 0.4);
+        }
+        
+        .action-btn.edit {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+        
+        .action-btn.edit:hover {
+            background: var(--bg-secondary);
+            border-color: var(--bitcoin-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .hero-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .steps-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .action-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -37,22 +295,26 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
         }
         .modal-content {
             background-color: var(--bg-secondary);
             margin: 15% auto;
             padding: 30px;
-            border-radius: 10px;
+            border-radius: 20px;
             width: 80%;
             max-width: 400px;
-            box-shadow: 0 4px 20px var(--shadow);
-            transition: background-color 0.3s ease;
+            box-shadow: 0 20px 60px var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
         }
         .modal h3 {
             color: var(--text-primary);
             margin-bottom: 20px;
             text-align: center;
             transition: color 0.3s ease;
+            font-size: 1.5rem;
+            font-weight: 600;
         }
         .close {
             color: var(--text-muted);
@@ -61,6 +323,9 @@
             font-weight: bold;
             cursor: pointer;
             transition: color 0.3s ease;
+            position: absolute;
+            top: 15px;
+            right: 20px;
         }
         .close:hover {
             color: var(--text-primary);
@@ -79,7 +344,7 @@
             width: 100%;
             padding: 12px 16px;
             border: 2px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
             transition: all 0.3s ease;
             background: var(--bg-secondary);
@@ -88,13 +353,13 @@
         }
         .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--bitcoin-orange);
+            box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.1);
         }
         .btn {
             border: none;
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 600;
@@ -104,12 +369,12 @@
             text-align: center;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
             color: white;
         }
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(247, 147, 26, 0.3);
         }
         .btn-secondary {
             background: #6c757d;
@@ -118,15 +383,6 @@
         .btn-secondary:hover {
             background: #5a6268;
             transform: translateY(-1px);
-        }
-        .login-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s ease;
-        }
-        .login-link:hover {
-            color: var(--text-primary);
         }
         .payment-methods-config {
             background: var(--bg-tertiary);
@@ -215,8 +471,8 @@
         }
         .payment-method input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--bitcoin-orange);
+            box-shadow: 0 0 0 3px rgba(247, 147, 26, 0.1);
         }
         .payment-method.has-content input[type="text"] {
             border-color: var(--success-border);
@@ -227,7 +483,7 @@
             justify-content: center;
         }
         .save-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
             color: white;
             border: none;
             padding: 12px 24px;
@@ -240,7 +496,7 @@
         }
         .save-btn:hover:not(:disabled) {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+            box-shadow: 0 4px 12px rgba(247, 147, 26, 0.3);
         }
         .save-btn:disabled {
             background: #6c757d;
@@ -250,13 +506,63 @@
 {% endblock %}
 
 {% block content %}
-        <p class="subtitle">Create and share your tipping jar with the world</p>
-        
-        <button onclick="openCreateJarModal()" class="create-jar-btn">Create Tipping Jar</button>
-        
-        <p>
-            <a href="/login" class="login-link">Already have a Tipping Jar? Access it here</a>
-        </p>
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <div class="hero-content">
+                <p class="hero-subtitle">
+                    Create beautiful Bitcoin tipping jars and share them with QR codes. 
+                    Accept tips in Bitcoin and Lightning Network payments instantly.
+                </p>
+                <div class="hero-buttons">
+                    <button onclick="openCreateJarModal()" class="hero-btn primary">Create New Jar</button>
+                    <a href="/login" class="hero-btn">Edit Existing Jar</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- How It Works Section -->
+        <div class="how-it-works">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">🏺</div>
+                    <h3 class="step-title">Create a Tipping Jar</h3>
+                    <p class="step-description">
+                        Set up your personalized tipping jar with your email address. 
+                        Configure Bitcoin and Lightning Network payment options to start accepting tips.
+                    </p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">📱</div>
+                    <h3 class="step-title">Distribute QR Codes</h3>
+                    <p class="step-description">
+                        Generate beautiful QR codes for each payment method. Print them as stickers, 
+                        share them digitally, or display them anywhere you want to receive tips.
+                    </p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">💰</div>
+                    <h3 class="step-title">Wait for Tips</h3>
+                    <p class="step-description">
+                        Sit back and watch the tips roll in! Your QR codes make it easy for anyone 
+                        to send you Bitcoin or Lightning payments with just a quick scan.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Section -->
+        <div class="action-section">
+            <h2 class="action-title">Ready to Get Started?</h2>
+            <p class="action-subtitle">Create your first tipping jar or manage your existing ones</p>
+            <div class="action-buttons">
+                <button onclick="openCreateJarModal()" class="action-btn create">Create New Jar</button>
+                <a href="/login" class="action-btn edit">Edit Existing Jar</a>
+            </div>
+        </div>
 
         <!-- Create Jar Modal -->
         <div id="createJarModal" class="modal">
