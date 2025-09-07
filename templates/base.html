@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,36 +142,6 @@
             transition: color 0.3s ease;
         }
 
-        .theme-toggle {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid transparent;
-            padding: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .theme-toggle:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-color: var(--border-color);
-        }
-
-        .theme-icon {
-            transition: all 0.2s ease;
-            font-weight: normal;
-        }
-
-        .theme-toggle:hover .theme-icon {
-            transform: scale(1.1);
-        }
 
         .home-btn {
             background: #6c757d;
@@ -360,11 +330,9 @@
         <button onclick="goHome()" class="home-btn">← Home</button>
         {% endblock %}
         <h1>{% block page_title %}🍯 Bitcoin Tipping{% endblock %}</h1>
-        <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle" title="Toggle theme">
-            <span class="theme-icon">☀</span>
-        </button>
     </div>
     {% endblock %}
+    
 
     <div class="container">
         {% block content %}{% endblock %}
@@ -394,50 +362,6 @@
     </div>
 
     <script>
-        // Theme management functions
-        function initializeTheme() {
-            // Check if user has a saved theme preference
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                document.documentElement.setAttribute('data-theme', savedTheme);
-                updateThemeIcon(savedTheme);
-            } else {
-                // Use system preference
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const systemTheme = prefersDark ? 'dark' : 'light';
-                updateThemeIcon(systemTheme);
-            }
-        }
-
-        function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            let newTheme;
-            
-            if (currentTheme === 'dark') {
-                newTheme = 'light';
-            } else if (currentTheme === 'light') {
-                newTheme = 'dark';
-            } else {
-                // No manual theme set, check system preference
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                newTheme = prefersDark ? 'light' : 'dark';
-            }
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeIcon(newTheme);
-        }
-
-        function updateThemeIcon(theme) {
-            const themeIcon = document.querySelector('.theme-icon');
-            if (themeIcon) {
-                if (theme === 'dark') {
-                    themeIcon.textContent = '☀';
-                } else {
-                    themeIcon.textContent = '☽';
-                }
-            }
-        }
 
         function goHome() {
             window.location.href = '/';
@@ -465,8 +389,6 @@
             }, 3000);
         }
 
-        // Initialize theme when page loads
-        document.addEventListener('DOMContentLoaded', initializeTheme);
 
         {% block extra_js %}{% endblock %}
     </script>
