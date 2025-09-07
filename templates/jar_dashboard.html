@@ -1,0 +1,653 @@
+{% extends "base.html" %}
+
+{% block title %}BitTip - Your Jar Dashboard{% endblock %}
+
+{% block page_title %}🍯 Your Tipping Jar{% endblock %}
+
+{% block extra_css %}
+        .jar-info {
+            background: var(--bg-tertiary);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            transition: background-color 0.3s ease;
+        }
+        .jar-details-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .jar-detail {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            transition: border-color 0.3s ease;
+        }
+        .jar-detail:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        .detail-value {
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        .jar-uuid {
+            font-family: monospace;
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            color: var(--text-muted);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .payment-management {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+        .payment-management h4 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+        .payment-description {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            transition: color 0.3s ease;
+        }
+        .payment-methods-config {
+            background: var(--bg-secondary);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow-light);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .payment-method {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .payment-method:last-child {
+            margin-bottom: 0;
+        }
+        .payment-method.has-content {
+            background: var(--success-bg);
+            border-color: var(--success-border);
+        }
+        .payment-method-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .payment-method-info {
+            flex: 1;
+        }
+        .payment-label {
+            display: block;
+            font-weight: 600;
+            font-size: 16px;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            transition: color 0.3s ease;
+        }
+        .payment-description-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+        .payment-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-indicator.active {
+            background: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+        .status-indicator.inactive {
+            background: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+        }
+        .status-text {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .status-text.active {
+            color: var(--success-text);
+        }
+        .status-text.inactive {
+            color: var(--error-border);
+        }
+        .payment-method input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        .payment-method input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .payment-method.has-content input[type="text"] {
+            border-color: var(--success-border);
+        }
+        .payment-actions {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+        }
+        .save-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+        .save-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .save-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        .share-section {
+            background: var(--info-bg);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            text-align: center;
+            border: 1px solid var(--info-border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .share-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .share-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            transition: color 0.3s ease;
+        }
+        .share-section p {
+            color: var(--text-secondary);
+            margin-bottom: 0;
+            transition: color 0.3s ease;
+        }
+        .copy-btn {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+        .copy-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+        .preview-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            min-width: 120px;
+        }
+        .preview-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+{% endblock %}
+
+{% block content %}
+        <div class="share-section">
+            <h4>Share Your Jar</h4>
+            <p>Share your tipping jar with others or preview how it looks:</p>
+            <div class="share-actions">
+                <button class="copy-btn" onclick="copyShareUrl()">📋 Copy Link</button>
+                <button class="preview-btn" onclick="previewJar()">👁️ Preview</button>
+            </div>
+        </div>
+        
+        <div class="payment-management">
+            <h4>Payment Methods</h4>
+            <p class="payment-description">Configure your payment methods below. Leave fields empty to disable them.</p>
+            
+            <div class="payment-methods-config">
+                <div class="payment-method">
+                    <div class="payment-method-header">
+                        <div class="payment-method-info">
+                            <label class="payment-label">₿ Bitcoin</label>
+                            <span class="payment-description-text">Bitcoin wallet address</span>
+                        </div>
+                        <div class="payment-status" id="bitcoinStatus">
+                            <span class="status-indicator inactive"></span>
+                            <span class="status-text">Inactive</span>
+                        </div>
+                    </div>
+                    <input type="text" id="bitcoinAddress" placeholder="Enter Bitcoin address (e.g., bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh)" oninput="updatePaymentMethodState('bitcoin')">
+                </div>
+                
+                <div class="payment-method">
+                    <div class="payment-method-header">
+                        <div class="payment-method-info">
+                            <label class="payment-label">⚡ Bitcoin Lightning</label>
+                            <span class="payment-description-text">Lightning Network address</span>
+                        </div>
+                        <div class="payment-status" id="lightningStatus">
+                            <span class="status-indicator inactive"></span>
+                            <span class="status-text">Inactive</span>
+                        </div>
+                    </div>
+                    <input type="text" id="lightningAddress" placeholder="Enter Lightning address (e.g., user@domain.com)" oninput="updatePaymentMethodState('lightning')">
+                </div>
+                
+            </div>
+            
+            <div class="payment-actions">
+                <button onclick="savePaymentMethods()" class="save-btn" id="saveBtn" disabled>
+                    <span class="save-text">💾 Save Changes</span>
+                    <span class="save-loading" style="display: none;">⏳ Saving...</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="payment-management">
+            <h4>Referral Codes</h4>
+            <p class="payment-description">Configure referral codes to help users get started with Bitcoin services.</p>
+            
+            <div class="payment-methods-config">
+                <div class="payment-method">
+                    <div class="payment-method-header">
+                        <div class="payment-method-info">
+                            <label class="payment-label">⚡ Strike.me</label>
+                            <span class="payment-description-text">Strike referral code for Bitcoin onboarding</span>
+                        </div>
+                        <div class="payment-status" id="strikeStatus">
+                            <span class="status-indicator inactive"></span>
+                            <span class="status-text">Inactive</span>
+                        </div>
+                    </div>
+                    <input type="text" id="strikeCode" placeholder="Enter Strike referral code (e.g., ABC123)" oninput="updateReferralCodeState('strike')" style="text-transform: uppercase;">
+                </div>
+            </div>
+            
+            <div class="payment-actions">
+                <button onclick="saveReferralCodes()" class="save-btn" id="saveReferralBtn" disabled>
+                    <span class="save-text">💾 Save Changes</span>
+                    <span class="save-loading" style="display: none;">⏳ Saving...</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="jar-info">
+            <h4>Jar Details</h4>
+            <div class="jar-details-grid">
+                <div class="jar-detail">
+                    <span class="detail-label">Email:</span>
+                    <span class="detail-value" id="jarEmail"></span>
+                </div>
+                <div class="jar-detail">
+                    <span class="detail-label">Created:</span>
+                    <span class="detail-value" id="jarCreated"></span>
+                </div>
+                <div class="jar-detail">
+                    <span class="detail-label">Jar ID:</span>
+                    <span class="detail-value jar-uuid" id="jarUuid"></span>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block extra_js %}
+        let currentJar = null;
+        let originalPaymentOptions = {};
+        let originalReferralCodes = {};
+        let hasUnsavedChanges = false;
+        let hasUnsavedReferralChanges = false;
+
+        // Load jar data when page loads
+        window.onload = function() {
+            const jarUuid = window.location.pathname.split('/').pop();
+            loadJar(jarUuid);
+        };
+
+        async function loadJar(jarUuid) {
+            try {
+                const response = await fetch(`/jars/hash/${jarUuid}`);
+                if (response.ok) {
+                    const jar = await response.json();
+                    currentJar = jar;
+                    originalPaymentOptions = jar.payment_options || {};
+                    originalReferralCodes = jar.referral_codes || {};
+                    
+                    // Update UI
+                    document.getElementById('jarUuid').textContent = jar.email_hash;
+                    document.getElementById('jarEmail').textContent = jar.email;
+                    document.getElementById('jarCreated').textContent = new Date(jar.created_at).toLocaleString();
+                    
+                    // Load existing payment methods and referral codes into form
+                    loadPaymentMethods();
+                    loadReferralCodes();
+                } else {
+                    alert('Jar not found');
+                    window.location.href = '/';
+                }
+            } catch (error) {
+                alert('Error loading jar: ' + error.message);
+                window.location.href = '/';
+            }
+        }
+
+        function loadPaymentMethods() {
+            // Load existing payment methods into form
+            if (originalPaymentOptions.bitcoin) {
+                document.getElementById('bitcoinAddress').value = originalPaymentOptions.bitcoin;
+                updatePaymentMethodState('bitcoin');
+            }
+            
+            if (originalPaymentOptions.lightning) {
+                document.getElementById('lightningAddress').value = originalPaymentOptions.lightning;
+                updatePaymentMethodState('lightning');
+            }
+            
+            
+            // Reset change tracking
+            hasUnsavedChanges = false;
+            updateButtonStates();
+        }
+
+        function loadReferralCodes() {
+            // Load existing referral codes into form
+            if (originalReferralCodes.strike) {
+                document.getElementById('strikeCode').value = originalReferralCodes.strike;
+                updateReferralCodeState('strike');
+            }
+            
+            // Reset change tracking
+            hasUnsavedReferralChanges = false;
+            updateReferralButtonStates();
+        }
+
+        function updatePaymentMethodState(method) {
+            const input = document.getElementById(`${method}Address`) || document.getElementById(`${method}Handle`);
+            const paymentMethodDiv = input.closest('.payment-method');
+            const statusDiv = document.getElementById(`${method}Status`);
+            const indicator = statusDiv.querySelector('.status-indicator');
+            const statusText = statusDiv.querySelector('.status-text');
+            
+            if (input.value.trim()) {
+                paymentMethodDiv.classList.add('has-content');
+                indicator.classList.remove('inactive');
+                indicator.classList.add('active');
+                statusText.textContent = 'Active';
+                statusText.classList.remove('inactive');
+                statusText.classList.add('active');
+            } else {
+                paymentMethodDiv.classList.remove('has-content');
+                indicator.classList.remove('active');
+                indicator.classList.add('inactive');
+                statusText.textContent = 'Inactive';
+                statusText.classList.remove('inactive');
+                statusText.classList.add('inactive');
+            }
+            
+            // Check for changes
+            checkForChanges();
+        }
+
+        function checkForChanges() {
+            const currentValues = {
+                bitcoin: document.getElementById('bitcoinAddress').value.trim(),
+                lightning: document.getElementById('lightningAddress').value.trim()
+            };
+            
+            const originalValues = {
+                bitcoin: originalPaymentOptions.bitcoin || '',
+                lightning: originalPaymentOptions.lightning || ''
+            };
+            
+            hasUnsavedChanges = JSON.stringify(currentValues) !== JSON.stringify(originalValues);
+            updateButtonStates();
+        }
+
+        function updateButtonStates() {
+            const saveBtn = document.getElementById('saveBtn');
+            
+            if (hasUnsavedChanges) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
+        }
+
+        async function savePaymentMethods() {
+            if (!currentJar || !hasUnsavedChanges) return;
+            
+            const saveBtn = document.getElementById('saveBtn');
+            const saveText = saveBtn.querySelector('.save-text');
+            const saveLoading = saveBtn.querySelector('.save-loading');
+            
+            // Show loading state
+            saveBtn.disabled = true;
+            saveText.style.display = 'none';
+            saveLoading.style.display = 'inline';
+            
+            try {
+                const methods = {};
+                
+                const bitcoinAddress = document.getElementById('bitcoinAddress').value.trim();
+                if (bitcoinAddress) {
+                    methods.bitcoin = bitcoinAddress;
+                }
+                
+                const lightningAddress = document.getElementById('lightningAddress').value.trim();
+                if (lightningAddress) {
+                    methods.lightning = lightningAddress;
+                }
+                
+                
+                const response = await fetch(`/jars/hash/${currentJar.email_hash}/payment-options`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ payment_options: methods })
+                });
+                
+                if (response.ok) {
+                    const updatedJar = await response.json();
+                    currentJar = updatedJar;
+                    originalPaymentOptions = methods;
+                    hasUnsavedChanges = false;
+                    updateButtonStates();
+                    
+                    // Show success notification
+                    showNotification('Payment methods saved successfully!', 'success');
+                } else {
+                    throw new Error('Failed to save payment options');
+                }
+            } catch (error) {
+                console.error('Error saving payment options:', error);
+                showNotification('Failed to save payment methods. Please try again.', 'error');
+            } finally {
+                // Hide loading state
+                saveText.style.display = 'inline';
+                saveLoading.style.display = 'none';
+                updateButtonStates();
+            }
+        }
+
+        function updateReferralCodeState(code) {
+            const input = document.getElementById(`${code}Code`);
+            // Convert input to uppercase
+            input.value = input.value.toUpperCase();
+            
+            const paymentMethodDiv = input.closest('.payment-method');
+            const statusDiv = document.getElementById(`${code}Status`);
+            const indicator = statusDiv.querySelector('.status-indicator');
+            const statusText = statusDiv.querySelector('.status-text');
+            
+            if (input.value.trim()) {
+                paymentMethodDiv.classList.add('has-content');
+                indicator.classList.remove('inactive');
+                indicator.classList.add('active');
+                statusText.textContent = 'Active';
+                statusText.classList.remove('inactive');
+                statusText.classList.add('active');
+            } else {
+                paymentMethodDiv.classList.remove('has-content');
+                indicator.classList.remove('active');
+                indicator.classList.add('inactive');
+                statusText.textContent = 'Inactive';
+                statusText.classList.remove('inactive');
+                statusText.classList.add('inactive');
+            }
+            
+            // Check for changes
+            checkForReferralChanges();
+        }
+
+        function checkForReferralChanges() {
+            const currentValues = {
+                strike: document.getElementById('strikeCode').value.trim()
+            };
+            
+            const originalValues = {
+                strike: originalReferralCodes.strike || ''
+            };
+            
+            hasUnsavedReferralChanges = JSON.stringify(currentValues) !== JSON.stringify(originalValues);
+            updateReferralButtonStates();
+        }
+
+        function updateReferralButtonStates() {
+            const saveBtn = document.getElementById('saveReferralBtn');
+            
+            if (hasUnsavedReferralChanges) {
+                saveBtn.disabled = false;
+            } else {
+                saveBtn.disabled = true;
+            }
+        }
+
+        async function saveReferralCodes() {
+            if (!currentJar || !hasUnsavedReferralChanges) return;
+            
+            const saveBtn = document.getElementById('saveReferralBtn');
+            const saveText = saveBtn.querySelector('.save-text');
+            const saveLoading = saveBtn.querySelector('.save-loading');
+            
+            // Show loading state
+            saveBtn.disabled = true;
+            saveText.style.display = 'none';
+            saveLoading.style.display = 'inline';
+            
+            try {
+                const codes = {};
+                
+                const strikeCode = document.getElementById('strikeCode').value.trim();
+                if (strikeCode) {
+                    codes.strike = strikeCode;
+                }
+                
+                const response = await fetch(`/jars/hash/${currentJar.email_hash}/referral-codes`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ referral_codes: codes })
+                });
+                
+                if (response.ok) {
+                    const updatedJar = await response.json();
+                    currentJar = updatedJar;
+                    originalReferralCodes = codes;
+                    hasUnsavedReferralChanges = false;
+                    updateReferralButtonStates();
+                    
+                    // Show success notification
+                    showNotification('Referral codes saved successfully!', 'success');
+                } else {
+                    throw new Error('Failed to save referral codes');
+                }
+            } catch (error) {
+                console.error('Error saving referral codes:', error);
+                showNotification('Failed to save referral codes. Please try again.', 'error');
+            } finally {
+                // Hide loading state
+                saveText.style.display = 'inline';
+                saveLoading.style.display = 'none';
+                updateReferralButtonStates();
+            }
+        }
+
+        function previewJar() {
+            if (!currentJar) return;
+            window.location.href = `/preview/${currentJar.email_hash}`;
+        }
+
+        function copyShareUrl() {
+            if (!currentJar) return;
+            
+            const shareUrl = `${window.location.origin}/jar/${currentJar.email_hash}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showNotification('Link copied to clipboard!', 'success');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shareUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showNotification('Link copied to clipboard!', 'success');
+            });
+        }
+{% endblock %}

@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}BitTip Preview - {{ jar.email_hash }}{% endblock %}
+
+{% block page_title %}🍯 Tipping Jar{% endblock %}
+
+{% block header_left %}
+<button onclick="goToEdit()" class="home-btn">← Back</button>
+{% endblock %}
+
+{% block extra_css %}
+        .jar-uuid {
+            font-family: monospace;
+            background: var(--bg-tertiary);
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .referral-button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a1a !important;
+            padding: 14px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 16px;
+            display: inline-block;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.25);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .referral-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            text-decoration: none;
+            color: #1a1a1a !important;
+            background: linear-gradient(135deg, #FFE135 0%, #FFB347 100%);
+        }
+        .referral-button:active {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Dark mode improvements for referral button */
+        @media (prefers-color-scheme: dark) {
+            .referral-button {
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+                color: #1a1a1a !important;
+                box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+            }
+            .referral-button:hover {
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+                color: #1a1a1a !important;
+            }
+        }
+        
+        [data-theme="dark"] .referral-button {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a1a1a !important;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
+        }
+        
+        [data-theme="dark"] .referral-button:hover {
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+            color: #1a1a1a !important;
+        }
+        .payment-section {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .referral-section {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+        .referral-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+        .referral-section p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .payment-section h4 {
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            transition: color 0.3s ease;
+        }
+        .payment-method-selector {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-sizing: border-box;
+        }
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .payment-info {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .qr-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .qr-code {
+            max-width: 300px;
+            margin: 0 auto 15px auto;
+            display: block;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-light);
+            transition: all 0.3s ease;
+        }
+        .payment-address {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            word-break: break-all;
+            line-height: 1.4;
+            max-width: 400px;
+            margin: 0 auto;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+            position: relative;
+        }
+        .payment-address::after {
+            content: '📋';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-size: 10px;
+        }
+        .payment-address:hover {
+            opacity: 1;
+            background: var(--bg-secondary);
+            cursor: pointer;
+        }
+        .payment-address:hover::after {
+            opacity: 1;
+        }
+        .payment-address:active {
+            transform: scale(0.98);
+        }
+        .no-payment-methods {
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 20px;
+            transition: color 0.3s ease;
+        }
+{% endblock %}
+
+{% block content %}
+        <div class="payment-section">
+            <h4>Choose Payment Method</h4>
+            
+            {% if jar.payment_options %}
+                <div class="payment-method-selector">
+                    <select id="paymentMethod" class="form-select" onchange="updatePaymentDisplay()">
+                        <option value="">Select a payment method...</option>
+                        {% for method, address in jar.payment_options.items() %}
+                            {% if address %}
+                                <option value="{{ method }}">{{ method|title }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div id="paymentInfo" class="payment-info" style="display: none;">
+                    <div class="qr-container">
+                        <img id="qrCode" class="qr-code" style="display: none;" alt="QR Code">
+                        <div class="payment-address" id="paymentAddress" title="Click to copy address"></div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-payment-methods">
+                    No payment methods configured for this jar.
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if jar.referral_codes and jar.referral_codes.strike %}
+        <div class="payment-section referral-section">
+            <h4>Don't have Bitcoin yet?</h4>
+            <p>
+                Buy it here with my referral code for extra perks:
+            </p>
+            <div class="payment-info">
+                <div class="payment-method-name">⚡ Strike.me</div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="https://invite.strike.me/{{ jar.referral_codes.strike }}" 
+                       target="_blank" 
+                       class="referral-button">
+                        Get Bitcoin with Strike
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+        const jarUuid = '{{ jar.email_hash }}';
+        const paymentOptions = {{ jar.payment_options|tojson }};
+        
+        const methodNames = {
+            'bitcoin': 'Bitcoin',
+            'lightning': 'Bitcoin Lightning'
+        };
+
+
+        function updatePaymentDisplay() {
+            const selectedMethod = document.getElementById('paymentMethod').value;
+            const paymentInfo = document.getElementById('paymentInfo');
+            const paymentAddress = document.getElementById('paymentAddress');
+            const qrCode = document.getElementById('qrCode');
+            
+            if (!selectedMethod || !paymentOptions[selectedMethod]) {
+                paymentInfo.style.display = 'none';
+                return;
+            }
+            
+            paymentInfo.style.display = 'block';
+            
+            // Update payment address with click-to-copy functionality
+            paymentAddress.textContent = paymentOptions[selectedMethod];
+            paymentAddress.onclick = function() {
+                navigator.clipboard.writeText(paymentOptions[selectedMethod]).then(() => {
+                    // Show temporary feedback
+                    const originalText = paymentAddress.textContent;
+                    paymentAddress.textContent = 'Copied!';
+                    paymentAddress.style.color = 'var(--success-text)';
+                    setTimeout(() => {
+                        paymentAddress.textContent = originalText;
+                        paymentAddress.style.color = '';
+                    }, 1000);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = paymentOptions[selectedMethod];
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    // Show feedback
+                    const originalText = paymentAddress.textContent;
+                    paymentAddress.textContent = 'Copied!';
+                    paymentAddress.style.color = 'var(--success-text)';
+                    setTimeout(() => {
+                        paymentAddress.textContent = originalText;
+                        paymentAddress.style.color = '';
+                    }, 1000);
+                });
+            };
+            
+            // Generate and show QR code (logo is now embedded in the QR code)
+            qrCode.src = `/qr/${jarUuid}/${selectedMethod}`;
+            qrCode.style.display = 'block';
+        }
+
+        function goToEdit() {
+            // Try to go back in history first, fallback to jar dashboard
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = `/manage/${jarUuid}`;
+            }
+        }
+
+        // Auto-select first available payment method on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const select = document.getElementById('paymentMethod');
+            if (select && select.options.length > 1) {
+                select.selectedIndex = 1; // Select first payment method (skip the placeholder)
+                updatePaymentDisplay();
+            }
+        });
+{% endblock %}

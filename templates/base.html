@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BitTip{% endblock %}</title>
+    <style>
+        :root {
+            /* Light theme colors */
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --text-muted: #666666;
+            --border-color: #e9ecef;
+            --border-light: #ddd;
+            --shadow: rgba(0,0,0,0.1);
+            --shadow-light: rgba(0,0,0,0.05);
+            --success-bg: #d4edda;
+            --success-border: #28a745;
+            --success-text: #155724;
+            --info-bg: #e3f2fd;
+            --info-border: #e1f5fe;
+            --warning-bg: #fff3cd;
+            --warning-border: #ffeaa7;
+            --error-bg: #f8d7da;
+            --error-border: #dc3545;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root:not([data-theme="light"]) {
+                /* Dark theme colors */
+                --bg-primary: #1a1a1a;
+                --bg-secondary: #2d2d2d;
+                --bg-tertiary: #3a3a3a;
+                --text-primary: #ffffff;
+                --text-secondary: #b0b0b0;
+                --text-muted: #888888;
+                --border-color: #404040;
+                --border-light: #555555;
+                --shadow: rgba(0,0,0,0.3);
+                --shadow-light: rgba(0,0,0,0.2);
+                --success-bg: #1e4d2b;
+                --success-border: #28a745;
+                --success-text: #90ee90;
+                --info-bg: #1a3a5c;
+                --info-border: #2196f3;
+                --warning-bg: #4d3a1a;
+                --warning-border: #ffc107;
+                --error-bg: #4d1a1a;
+                --error-border: #dc3545;
+            }
+        }
+
+        /* Manual theme overrides */
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #888888;
+            --border-color: #404040;
+            --border-light: #555555;
+            --shadow: rgba(0,0,0,0.3);
+            --shadow-light: rgba(0,0,0,0.2);
+            --success-bg: #1e4d2b;
+            --success-border: #28a745;
+            --success-text: #90ee90;
+            --info-bg: #1a3a5c;
+            --info-border: #2196f3;
+            --warning-bg: #4d3a1a;
+            --warning-border: #ffc107;
+            --error-bg: #4d1a1a;
+            --error-border: #dc3545;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f5f5f5;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f8f9fa;
+            --text-primary: #333333;
+            --text-secondary: #6c757d;
+            --text-muted: #666666;
+            --border-color: #e9ecef;
+            --border-light: #ddd;
+            --shadow: rgba(0,0,0,0.1);
+            --shadow-light: rgba(0,0,0,0.05);
+            --success-bg: #d4edda;
+            --success-border: #28a745;
+            --success-text: #155724;
+            --info-bg: #e3f2fd;
+            --info-border: #e1f5fe;
+            --warning-bg: #fff3cd;
+            --warning-border: #ffeaa7;
+            --error-bg: #f8d7da;
+            --error-border: #dc3545;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            background: var(--bg-secondary);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px var(--shadow);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .header-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            margin: 0;
+            flex: 1;
+            text-align: center;
+            transition: color 0.3s ease;
+        }
+
+        .theme-toggle {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid transparent;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .theme-icon {
+            transition: all 0.2s ease;
+            font-weight: normal;
+        }
+
+        .theme-toggle:hover .theme-icon {
+            transform: scale(1.1);
+        }
+
+        .home-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .home-btn:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--success-border);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px var(--shadow);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Common button styles */
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Text styles */
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .text-muted { color: var(--text-muted); }
+
+        /* Background styles */
+        .bg-primary { background-color: var(--bg-primary); }
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .bg-tertiary { background-color: var(--bg-tertiary); }
+
+        /* Border styles */
+        .border { border: 1px solid var(--border-color); }
+        .border-light { border: 1px solid var(--border-light); }
+
+        /* Custom styles for specific pages */
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    {% block header %}
+    <div class="header-section">
+        {% block header_left %}
+        <button onclick="goHome()" class="home-btn">← Home</button>
+        {% endblock %}
+        <h1>{% block page_title %}🍯 BitTip{% endblock %}</h1>
+        <button onclick="toggleTheme()" class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <span class="theme-icon">☀</span>
+        </button>
+    </div>
+    {% endblock %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Subtle notification -->
+    <div id="notification" class="notification">
+        Link copied to clipboard!
+    </div>
+
+    <script>
+        // Theme management functions
+        function initializeTheme() {
+            // Check if user has a saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                updateThemeIcon(savedTheme);
+            } else {
+                // Use system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const systemTheme = prefersDark ? 'dark' : 'light';
+                updateThemeIcon(systemTheme);
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            let newTheme;
+            
+            if (currentTheme === 'dark') {
+                newTheme = 'light';
+            } else if (currentTheme === 'light') {
+                newTheme = 'dark';
+            } else {
+                // No manual theme set, check system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                newTheme = prefersDark ? 'light' : 'dark';
+            }
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const themeIcon = document.querySelector('.theme-icon');
+            if (themeIcon) {
+                if (theme === 'dark') {
+                    themeIcon.textContent = '☀';
+                } else {
+                    themeIcon.textContent = '☽';
+                }
+            }
+        }
+
+        function goHome() {
+            window.location.href = '/';
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            
+            // Update notification style based on type
+            notification.className = 'notification';
+            if (type === 'error') {
+                notification.style.background = 'var(--error-border)';
+            } else if (type === 'info') {
+                notification.style.background = 'var(--info-border)';
+            } else {
+                notification.style.background = 'var(--success-border)';
+            }
+            
+            notification.classList.add('show');
+            
+            // Hide notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Initialize theme when page loads
+        document.addEventListener('DOMContentLoaded', initializeTheme);
+
+        {% block extra_js %}{% endblock %}
+    </script>
+</body>
+</html>
