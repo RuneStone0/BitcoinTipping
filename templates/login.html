@@ -52,20 +52,25 @@
             text-align: center;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
             color: white;
         }
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 4px 12px rgba(194, 65, 12, 0.3);
         }
         .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow-light);
         }
         .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-1px);
+            background: var(--bg-tertiary);
+            border-color: var(--bitcoin-orange);
+            color: var(--bitcoin-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
         }
         .error-message {
             color: var(--error-border);

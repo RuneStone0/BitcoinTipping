@@ -1,4 +1,4 @@
-# Bitcoin Tipping - Tipping Jar Application
+# BitcoinTipping.Org - A Bitcoin Tipping Jar Application
 
 A Flask application for creating and managing digital tipping jars with SQLite database functionality.
 

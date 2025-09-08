@@ -26,9 +26,9 @@
             --warning-border: #ffc107;
             --error-bg: #f8d7da;
             --error-border: #dc3545;
-            --bitcoin-orange: #f7931a;
-            --bitcoin-orange-light: #ffb84d;
-            --bitcoin-orange-dark: #e6820a;
+            --bitcoin-orange: #c2410c;
+            --bitcoin-orange-light: #ea580c;
+            --bitcoin-orange-dark: #9a3412;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -80,9 +80,9 @@
             --warning-border: #ffc107;
             --error-bg: #4d1a1a;
             --error-border: #dc3545;
-            --bitcoin-orange: #f7931a;
-            --bitcoin-orange-light: #ffb84d;
-            --bitcoin-orange-dark: #e6820a;
+            --bitcoin-orange: #c2410c;
+            --bitcoin-orange-light: #ea580c;
+            --bitcoin-orange-dark: #9a3412;
         }
 
         [data-theme="light"] {
@@ -105,9 +105,9 @@
             --warning-border: #ffc107;
             --error-bg: #f8d7da;
             --error-border: #dc3545;
-            --bitcoin-orange: #f7931a;
-            --bitcoin-orange-light: #ffb84d;
-            --bitcoin-orange-dark: #e6820a;
+            --bitcoin-orange: #c2410c;
+            --bitcoin-orange-light: #ea580c;
+            --bitcoin-orange-dark: #9a3412;
         }
 
         body {
@@ -144,20 +144,24 @@
 
 
         .home-btn {
-            background: #6c757d;
-            color: white;
-            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
             padding: 8px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px var(--shadow-light);
         }
 
         .home-btn:hover {
-            background: #5a6268;
-            transform: translateY(-1px);
+            background: var(--bg-tertiary);
+            border-color: var(--bitcoin-orange);
+            color: var(--bitcoin-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
         }
 
         .notification {
@@ -197,21 +201,28 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--bitcoin-orange) 0%, var(--bitcoin-orange-dark) 100%);
             color: white;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .btn-primary:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(247, 147, 26, 0.3);
+            box-shadow: 0 4px 12px rgba(194, 65, 12, 0.3);
         }
 
         .btn-secondary {
-            background: #6c757d;
-            color: white;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 2px 4px var(--shadow-light);
         }
 
         .btn-secondary:hover {
-            background: #5a6268;
-            transform: translateY(-1px);
+            background: var(--bg-tertiary);
+            border-color: var(--bitcoin-orange);
+            color: var(--bitcoin-orange);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
         }
 
         .btn-success {
