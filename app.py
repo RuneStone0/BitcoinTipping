@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, render_template, send_file
-from flask_sqlalchemy import SQLAlchemy
+from pymongo import MongoClient
 import os
 import uuid
 import json
@@ -10,65 +10,73 @@ from PIL import Image, ImageDraw
 import bech32
 import requests
 from datetime import datetime, timedelta
+from bson import ObjectId
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 
 # Database configuration
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(basedir, "app.db")}'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+MONGODB_URI = os.environ.get('MONGODB_URI', 'mongodb://localhost:27017/bitcoin_tipping')
 
-# Initialize database
-db = SQLAlchemy(app)
+# Extract database name from URI
+def extract_database_name(uri):
+    """Extract database name from MongoDB URI"""
+    if '/' in uri and not uri.endswith('/'):
+        return uri.split('/')[-1]
+    return 'bitcoin_tipping'  # Default fallback
 
-# Database Models
-class Jar(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    email_hash = db.Column(db.String(64), unique=True, nullable=False)  # SHA-256 hash of email
-    payment_options = db.Column(db.Text, default='[]')  # JSON string of payment options
-    referral_codes = db.Column(db.Text, default='{}')  # JSON string of referral codes
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+DATABASE_NAME = extract_database_name(MONGODB_URI)
 
-    def __init__(self, email, **kwargs):
-        super(Jar, self).__init__(**kwargs)
-        self.email = email
-        self.email_hash = self._generate_email_hash(email)
+# Initialize MongoDB connection
+client = MongoClient(MONGODB_URI)
+print(f"Using MongoDB at {MONGODB_URI}")
 
-    def _generate_email_hash(self, email):
-        """Generate SHA-256 hash of email address"""
-        return hashlib.sha256(email.lower().encode('utf-8')).hexdigest()
+db = client[DATABASE_NAME]
 
-    def __repr__(self):
-        return f'<Jar {self.email_hash}>'
+# Database Collections
+jars_collection = db.jars
 
-    def get_payment_options(self):
-        try:
-            return json.loads(self.payment_options)
-        except (json.JSONDecodeError, TypeError):
-            return {}
+# Helper functions for MongoDB operations
+def generate_email_hash(email):
+    """Generate SHA-256 hash of email address"""
+    return hashlib.sha256(email.lower().encode('utf-8')).hexdigest()
 
-    def set_payment_options(self, options):
-        self.payment_options = json.dumps(options)
+def create_jar(email, payment_options=None, referral_codes=None):
+    """Create a new jar document"""
+    jar_doc = {
+        'email': email,
+        'email_hash': generate_email_hash(email),
+        'payment_options': payment_options or {},
+        'referral_codes': referral_codes or {},
+        'created_at': datetime.utcnow()
+    }
+    result = jars_collection.insert_one(jar_doc)
+    return result.inserted_id
 
-    def get_referral_codes(self):
-        try:
-            return json.loads(self.referral_codes)
-        except (json.JSONDecodeError, TypeError):
-            return {}
+def find_jar_by_email_hash(email_hash):
+    """Find jar by email hash"""
+    return jars_collection.find_one({'email_hash': email_hash})
 
-    def set_referral_codes(self, codes):
-        self.referral_codes = json.dumps(codes)
+def find_jar_by_email(email):
+    """Find jar by email"""
+    return jars_collection.find_one({'email': email})
 
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'email': self.email,
-            'email_hash': self.email_hash,
-            'payment_options': self.get_payment_options(),
-            'referral_codes': self.get_referral_codes(),
-            'created_at': self.created_at.isoformat() if self.created_at else None
-        }
+def update_jar_payment_options(email_hash, payment_options):
+    """Update jar payment options"""
+    return jars_collection.update_one(
+        {'email_hash': email_hash},
+        {'$set': {'payment_options': payment_options}}
+    )
+
+def update_jar_referral_codes(email_hash, referral_codes):
+    """Update jar referral codes"""
+    return jars_collection.update_one(
+        {'email_hash': email_hash},
+        {'$set': {'referral_codes': referral_codes}}
+    )
 
 # Routes
 @app.route('/')
@@ -83,13 +91,14 @@ def hello():
 def health():
     """Health check endpoint for monitoring and load balancers"""
     from datetime import datetime
-    from sqlalchemy import text
     try:
         # Test database connection
-        db.session.execute(text('SELECT 1'))
+        client.admin.command('ping')
+        
         return jsonify({
             'status': 'healthy',
             'database': 'connected',
+            'database_type': 'mongodb',
             'timestamp': datetime.utcnow().isoformat()
         }), 200
     except Exception as e:
@@ -102,65 +111,96 @@ def health():
 
 @app.route('/jars', methods=['GET'])
 def get_jars():
-    jars = Jar.query.all()
-    return jsonify([jar.to_dict() for jar in jars])
+    jars = list(jars_collection.find())
+    # Convert ObjectId to string for JSON serialization
+    for jar in jars:
+        jar['_id'] = str(jar['_id'])
+        jar['created_at'] = jar['created_at'].isoformat() if jar.get('created_at') else None
+    return jsonify(jars)
 
 @app.route('/jars', methods=['POST'])
-def create_jar():
+def create_jar_route():
     data = request.get_json()
     
     if not data or not data.get('email'):
         return jsonify({'error': 'Email is required'}), 400
     
-    jar = Jar(email=data['email'])
-    db.session.add(jar)
-    db.session.commit()
+    # Check if jar already exists
+    existing_jar = find_jar_by_email(data['email'])
+    if existing_jar:
+        return jsonify({'error': 'Jar already exists for this email'}), 400
     
-    return jsonify(jar.to_dict()), 201
+    jar_id = create_jar(data['email'])
+    jar = find_jar_by_email(data['email'])
+    jar['_id'] = str(jar['_id'])
+    jar['created_at'] = jar['created_at'].isoformat() if jar.get('created_at') else None
+    
+    return jsonify(jar), 201
 
-@app.route('/jars/<int:jar_id>', methods=['GET'])
+@app.route('/jars/<jar_id>', methods=['GET'])
 def get_jar(jar_id):
-    jar = Jar.query.get_or_404(jar_id)
-    return jsonify(jar.to_dict())
+    try:
+        jar = jars_collection.find_one({'_id': ObjectId(jar_id)})
+        if not jar:
+            return jsonify({'error': 'Jar not found'}), 404
+        jar['_id'] = str(jar['_id'])
+        jar['created_at'] = jar['created_at'].isoformat() if jar.get('created_at') else None
+        return jsonify(jar)
+    except Exception:
+        return jsonify({'error': 'Invalid jar ID'}), 400
 
 @app.route('/jars/hash/<email_hash>', methods=['GET'])
 def get_jar_by_hash(email_hash):
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    return jsonify(jar.to_dict())
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
+    jar['_id'] = str(jar['_id'])
+    jar['created_at'] = jar['created_at'].isoformat() if jar.get('created_at') else None
+    return jsonify(jar)
 
 @app.route('/jars/hash/<email_hash>/payment-options', methods=['PUT'])
 def update_payment_options(email_hash):
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    data = request.get_json()
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
     
+    data = request.get_json()
     if not data or 'payment_options' not in data:
         return jsonify({'error': 'Payment options are required'}), 400
     
-    jar.set_payment_options(data['payment_options'])
-    db.session.commit()
+    update_jar_payment_options(email_hash, data['payment_options'])
+    updated_jar = find_jar_by_email_hash(email_hash)
+    updated_jar['_id'] = str(updated_jar['_id'])
+    updated_jar['created_at'] = updated_jar['created_at'].isoformat() if updated_jar.get('created_at') else None
     
-    return jsonify(jar.to_dict())
+    return jsonify(updated_jar)
 
 @app.route('/jars/hash/<email_hash>/referral-codes', methods=['PUT'])
 def update_referral_codes(email_hash):
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    data = request.get_json()
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
     
+    data = request.get_json()
     if not data or 'referral_codes' not in data:
         return jsonify({'error': 'Referral codes are required'}), 400
     
-    jar.set_referral_codes(data['referral_codes'])
-    db.session.commit()
+    update_jar_referral_codes(email_hash, data['referral_codes'])
+    updated_jar = find_jar_by_email_hash(email_hash)
+    updated_jar['_id'] = str(updated_jar['_id'])
+    updated_jar['created_at'] = updated_jar['created_at'].isoformat() if updated_jar.get('created_at') else None
     
-    return jsonify(jar.to_dict())
+    return jsonify(updated_jar)
 
 
 @app.route('/api/lnurl-pay/<email_hash>', methods=['GET'])
 def get_lnurl_pay_string(email_hash):
     """Get Bech32-encoded LNURL-pay string for a jar's lightning address"""
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    payment_options = jar.get_payment_options()
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
     
+    payment_options = jar.get('payment_options', {})
     lightning_address = payment_options.get('lightning')
     if not lightning_address:
         return jsonify({'error': 'Lightning address not configured'}), 404
@@ -184,8 +224,11 @@ def get_bitcoin_price_api():
 @app.route('/qr/<email_hash>/<payment_method>', methods=['GET'])
 def generate_qr_code(email_hash, payment_method):
     # Find jar by email_hash
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    payment_options = jar.get_payment_options()
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
+    
+    payment_options = jar.get('payment_options', {})
     
     # Get amount parameter (default to 1 USD)
     amount_usd = request.args.get('amount', '1')
@@ -293,54 +336,61 @@ def login():
         return jsonify({'error': 'Email is required'}), 400
     
     # Find jar by email
-    jar = Jar.query.filter_by(email=data['email']).first()
+    jar = find_jar_by_email(data['email'])
     
     if jar:
-        return jsonify({'jar': jar.to_dict()})
+        jar['_id'] = str(jar['_id'])
+        jar['created_at'] = jar['created_at'].isoformat() if jar.get('created_at') else None
+        return jsonify({'jar': jar})
     else:
         return jsonify({'error': 'No jar found with this email address'}), 404
 
 @app.route('/manage/<email_hash>', methods=['GET'])
 def jar_dashboard(email_hash):
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
     return render_template('jar_dashboard.html', jar=jar)
 
 @app.route('/jar/<email_hash>', methods=['GET'])
 def public_jar(email_hash):
     # Find jar by email_hash
-    jar = Jar.query.filter_by(email_hash=email_hash).first_or_404()
-    # Ensure payment_options and referral_codes are parsed for the template
-    jar.payment_options = jar.get_payment_options()
-    jar.referral_codes = jar.get_referral_codes()
+    jar = find_jar_by_email_hash(email_hash)
+    if not jar:
+        return jsonify({'error': 'Jar not found'}), 404
     return render_template('public_jar.html', jar=jar)
 
 @app.route('/init-db')
 def init_db():
     """Initialize the database with sample data"""
-    db.create_all()
-    
     messages = []
     
+    # Show which database type is being used
+    messages.append("Using mongodb database")
+    
     # Always ensure dummy jar for rtk@rtk-cv.dk exists
-    existing_dummy = Jar.query.filter_by(email='rtk@rtk-cv.dk').first()
+    existing_dummy = find_jar_by_email('rtk@rtk-cv.dk')
     if not existing_dummy:
         # Create dummy jar for rtk@rtk-cv.dk
-        dummy_jar = Jar(email='rtk@rtk-cv.dk')
-        dummy_jar.set_payment_options({
-            "bitcoin": "bc1qf7flehxkfmmdvk0gxaqmrnfqs0srpvncrrv77u",
-            "lightning": "runestone@strike.me",
-        })
-        dummy_jar.set_referral_codes({
-            "strike": "FDQH2P"
-        })
-        db.session.add(dummy_jar)
-        db.session.commit()
+        dummy_jar_doc = {
+            'email': 'rtk@rtk-cv.dk',
+            'email_hash': generate_email_hash('rtk@rtk-cv.dk'),
+            'payment_options': {
+                "bitcoin": "bc1qf7flehxkfmmdvk0gxaqmrnfqs0srpvncrrv77u",
+                "lightning": "runestone@strike.me",
+            },
+            'referral_codes': {
+                "strike": "FDQH2P"
+            },
+            'created_at': datetime.utcnow()
+        }
+        jars_collection.insert_one(dummy_jar_doc)
         messages.append("Created dummy jar for rtk@rtk-cv.dk")
     else:
         messages.append("Dummy jar for rtk@rtk-cv.dk already exists")
     
     # Add sample jars if none exist (excluding the dummy jar)
-    jar_count = Jar.query.count()
+    jar_count = jars_collection.count_documents({})
     if jar_count <= 1:  # Only dummy jar exists
         messages.append("Database initialized with sample data")
     else:
@@ -350,76 +400,8 @@ def init_db():
 
 @app.route('/migrate-db')
 def migrate_db():
-    """Migrate existing database to new schema"""
-    try:
-        from sqlalchemy import text
-        result = db.session.execute(text("PRAGMA table_info(jar)"))
-        columns = [row[1] for row in result.fetchall()]
-        column_names = [row[1] for row in result.fetchall()]
-        
-        migrations_applied = []
-        
-        # Check if email_hash column exists, if not add it
-        if 'email_hash' not in column_names:
-            db.session.execute(text("ALTER TABLE jar ADD COLUMN email_hash TEXT"))
-            db.session.commit()
-            migrations_applied.append("Added email_hash column")
-            
-            # Populate email_hash for existing records
-            existing_jars = db.session.execute(text("SELECT id, email FROM jar")).fetchall()
-            for jar_id, email in existing_jars:
-                email_hash = generate_email_hash(email)
-                db.session.execute(text("UPDATE jar SET email_hash = :hash WHERE id = :id"), 
-                                 {"hash": email_hash, "id": jar_id})
-            db.session.commit()
-            migrations_applied.append("Populated email_hash for existing records")
-        
-        # Check if referral_codes column exists, if not add it
-        if 'referral_codes' not in column_names:
-            db.session.execute(text("ALTER TABLE jar ADD COLUMN referral_codes TEXT DEFAULT '{}'"))
-            db.session.commit()
-            migrations_applied.append("Added referral_codes column")
-        
-        # Drop old UUID columns if they exist (they're no longer needed)
-        if 'jar_uuid' in column_names:
-            # SQLite doesn't support DROP COLUMN directly, so we need to recreate the table
-            # First, backup existing data
-            existing_data = db.session.execute(text("SELECT id, email, email_hash, payment_options, referral_codes, created_at FROM jar")).fetchall()
-            
-            # Drop the old table
-            db.session.execute(text("DROP TABLE jar"))
-            db.session.commit()
-            
-            # Create the new table with the correct schema
-            db.create_all()
-            
-            # Restore the data
-            for row in existing_data:
-                db.session.execute(text("""
-                    INSERT INTO jar (id, email, email_hash, payment_options, referral_codes, created_at) 
-                    VALUES (:id, :email, :email_hash, :payment_options, :referral_codes, :created_at)
-                """), {
-                    "id": row[0],
-                    "email": row[1], 
-                    "email_hash": row[2],
-                    "payment_options": row[3],
-                    "referral_codes": row[4],
-                    "created_at": row[5]
-                })
-            db.session.commit()
-            migrations_applied.append("Removed old UUID columns and recreated table")
-        
-        if migrations_applied:
-            return jsonify({'message': f'Database migrated successfully. Applied: {", ".join(migrations_applied)}'})
-        else:
-            return jsonify({'message': 'Database is already up to date.'})
-    except Exception as e:
-        return jsonify({'error': f'Migration failed: {str(e)}'}), 500
-
-# Helper function to generate email hash (useful for migrations)
-def generate_email_hash(email):
-    """Generate SHA-256 hash of email address"""
-    return hashlib.sha256(email.lower().encode('utf-8')).hexdigest()
+    """MongoDB migration endpoint - no migration needed for MongoDB"""
+    return jsonify({'message': 'MongoDB does not require schema migrations'})
 
 def lightning_address_to_lnurl_pay(lightning_address):
     """Convert Lightning Address to Bech32-encoded LNURL-pay string"""
@@ -439,7 +421,7 @@ def lightning_address_to_lnurl_pay(lightning_address):
 
 def get_bitcoin_price():
     """Get current Bitcoin price in USD with 24-hour caching"""
-    cache_file = os.path.join(basedir, 'bitcoin_price_cache.json')
+    cache_file = os.path.join(app.root_path, 'bitcoin_price_cache.json')
     
     # Check if cache exists and is less than 24 hours old
     if os.path.exists(cache_file):
@@ -497,6 +479,5 @@ def create_app():
     return app
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
+    # MongoDB collections are created automatically when first accessed
     app.run(debug=True, host='0.0.0.0', port=5000)

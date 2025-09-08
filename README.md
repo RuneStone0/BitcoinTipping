@@ -1,117 +1,62 @@
-# BitcoinTipping.Org - A Bitcoin Tipping Jar Application
+# 🍯 BitcoinTipping.Org
 
-A Flask application for creating and managing digital tipping jars with SQLite database functionality.
+Create beautiful, shareable Bitcoin tipping jars that make it easy for anyone to send you Bitcoin or Lightning payments with just a quick scan.
 
-## Setup
+**[🌐 Try it live at bitcointipping.org](https://bitcointipping.org)**
 
-### Option 1: Docker (Recommended)
+## What is BitcoinTipping.Org?
 
-1. Install Docker and Docker Compose
-2. Build and run the application:
-   ```bash
-   # Production mode
-   docker-compose up --build
-   
-   # Development mode with hot reload
-   docker-compose --profile dev up --build bitcoin-tipping-dev
-   ```
+BitcoinTipping.Org is a Flask application that allows you to create personalized digital tipping jars. Instead of static payment QR codes, your QR codes link to a beautiful web page where people can:
 
-### Option 2: Local Python Setup
+- Send Bitcoin or Lightning payments
+- Leave thank you messages
+- Get help with Bitcoin onboarding through referral codes
+- Experience a more personal and educational tipping process
 
-1. Install Python 3.7 or higher
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Why Use Bitcoin Tipping Jars?
 
-## Running the Application
+- **🔄 Flexibility** - Change your payment addresses anytime without reprinting QR codes
+- **🎓 Educational** - Help new users get started with Bitcoin through referral codes and friendly interface
+- **💬 Personal Touch** - Users can leave thank you messages instead of just anonymous payments
+- **🚀 Future-Proof** - Add new payment methods or features without updating your QR codes
 
-### Docker Commands
+## Perfect For
 
-```bash
-# Build the Docker image
-docker build -t bitcoin-tipping .
+- **📚 Free Content** - Books, articles, videos, podcasts, or any content you share freely
+- **🎨 Creative Work** - Art, music, writing, photography, or any creative expression  
+- **💡 Help & Advice** - Consulting, mentoring, tutorials, or sharing your expertise
+- **🌱 Community Building** - Events, meetups, online communities, or social initiatives
+- **🛠️ Open Source** - Software projects, tools, libraries, or technical contributions
+- **🎯 Any Appreciation** - When you want to give people an easy way to show they value what you do
 
-# Run in production mode
-docker run -p 5000:5000 -v $(pwd)/data:/app/data bitcoin-tipping
+## How It Works
 
-# Run in development mode
-docker run -p 5000:5000 -v $(pwd):/app -v $(pwd)/data:/app/data bitcoin-tipping python app.py
+1. **🏺 Create Your Tipping Jar** - Set up your personalized tipping jar with your email address and configure Bitcoin and Lightning Network payment options
+2. **📱 Share Your QR Codes** - Generate beautiful QR codes for each payment method and share them anywhere you want to receive appreciation
+3. **💰 Receive Tips** - Watch the appreciation flow in! Your QR codes make it incredibly easy for anyone to send you Bitcoin or Lightning payments
 
-# Using docker-compose (recommended)
-docker-compose up --build
-```
+## Getting Started
 
-### Local Python Execution
+Ready to create your own Bitcoin tipping jar? Check out our [setup instructions](docs/SETUP.md) to get started with your own instance.
 
-#### Option 1: Direct Execution (Development)
-1. Run the Flask application directly:
-   ```bash
-   python app.py
-   ```
+## Technology Stack
 
-#### Option 2: Using Gunicorn (Production)
-1. Run with Gunicorn:
-   ```bash
-   gunicorn -w 4 -b 0.0.0.0:5000 app:app
-   ```
+- **Backend**: Flask (Python)
+- **Database**: MongoDB
+- **Frontend**: HTML, CSS, JavaScript
+- **Deployment**: Docker
+- **Payment Methods**: Bitcoin and Lightning Network
 
-   Or with more configuration options:
-   ```bash
-   gunicorn -w 4 -b 0.0.0.0:5000 --timeout 120 --keep-alive 2 app:app
-   ```
+## Contributing
 
-### Database Initialization
-The database is automatically initialized when using Docker. For local development, initialize the database:
-```bash
-curl http://localhost:5000/init-db
-```
+This project was created to help creators and educators receive Bitcoin tips from their audience. Contributions are welcome!
 
-Or visit `http://localhost:5000/init-db` in your browser.
+Please use the [GitHub Issues](https://github.com/your-username/BitcoinTipping/issues) section to:
+- Report bugs or suggest new features
+- Ask questions about setup or usage
+- Share ideas for improvements
+- Get help with contributions
 
-### Database Migration
-If you encounter database schema errors (e.g., "no such column"), you can migrate the database:
-```bash
-curl http://localhost:5000/migrate-db
-```
+## License
 
-**Warning:** This will reset all existing data and recreate the database with the latest schema.
-
-### Docker Data Persistence
-When using Docker, the database is stored in the `./data` directory on your host machine. This ensures your data persists between container restarts.
-
-### Accessing the Application
-Open your web browser and navigate to:
-- `http://localhost:5000/` - Main interface with "Create Tipping Jar" button
-- `http://localhost:5000/hello` - Shows "Hello from Flask!"
-- `http://localhost:5000/init-db` - Initialize database with sample data
-- `http://localhost:5000/jars` - View all jars (GET)
-- `http://localhost:5000/jars/<id>` - View specific jar by ID (GET)
-- `http://localhost:5000/jars/uuid/<uuid>` - View specific jar by UUID (GET)
-
-### API Endpoints
-
-#### Jars API
-- **GET** `/jars` - Get all tipping jars
-- **POST** `/jars` - Create a new tipping jar
-  ```json
-  {
-    "email": "user@example.com"
-  }
-  ```
-- **GET** `/jars/<id>` - Get jar by ID
-- **GET** `/jars/uuid/<uuid>` - Get jar by UUID
-
-#### Database Features
-- SQLite database stored in `app.db` file
-- Jar model with id, jar_uuid (auto-generated), email, and created_at fields
-- Automatic database table creation
-- Sample data initialization
-- Web interface for creating tipping jars
-
-**Note:** When running directly with `python app.py`, the application runs in debug mode and will automatically reload when you make changes to the code. Gunicorn is better suited for production deployments.
-
-
-# TODO
-* Security, changes must require email confirmation
-* Print Preview as PDF
+This project is open source. See the repository for license details.
